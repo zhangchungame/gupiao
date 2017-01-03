@@ -1,56 +1,40 @@
 package allcode
 
 import (
-	"net/http"
-	"fmt"
-	"io/ioutil"
-	"bytes"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"strings"
-	"golang.org/x/text/transform"
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	"gupiao/common"
-	"time"
+	"github.com/astaxie/beego/orm"
 	"strconv"
+	"fmt"
+	"bytes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"io/ioutil"
 	"github.com/tealeg/xlsx"
-	"gupiao/singleInstance"
+	"time"
+	"gupiao/common"
+	"strings"
+	"net/http"
 )
 type Baseinfo struct {
-	id int
-	code string
-	name string
-	jiaoyisuo string
-	a_or_b string
-	market_time int
-	zong_gu_ben float64
-	liutong_gu_ben float64
+	Id int
+	Code string
+	Name string
+	Jiaoyisuo string
+	A_or_b string
+	Market_time int
+	Zong_gu_ben float64
+	Liutong_gu_ben float64
 }
 
-var db *sql.DB
-
-func init()  {
-	db=singleInstance.GetMysqlInstance()
-}
-
-func Getallcodes() []interface{}{
-	stmt,err:=db.Prepare("select code,jiaoyisuo from baseinfo where a_or_b=?")
-	common.Checkerr(err)
-	rows,err:=stmt.Query("A")
-	common.Checkerr(err)
-	result:=make([]interface{},0)
-	//columns,_:=rows.Columns()
-	code:=""
-	jiaoyisuo:=""
-	for rows.Next()  {
-		err = rows.Scan(&code,&jiaoyisuo)
-		common.Checkerr(err)
-		tmp:=make(map[string]interface{})
-		tmp["code"]=code
-		tmp["jiaoyisuo"]=jiaoyisuo
-		result=append(result,tmp)
-	}
+func Getallcodes() []Baseinfo{
+	db:=orm.NewOrm()
+	var result []Baseinfo
+	db.QueryTable("baseinfo").All(&result)
 	return result
+}
+
+func Setallcodes()  {
+	//loadCodeSz()
+	loadCodeSh()
 }
 func decode(s []byte) ([]byte, error) {
 	I := bytes.NewReader(s)
@@ -62,7 +46,7 @@ func decode(s []byte) ([]byte, error) {
 	}
 	return d, nil
 }
-func LoadCodeSz()  {
+func loadCodeSz()  {
 	excelFileName := "aaa.xlsx"
 	xlFile, err := xlsx.OpenFile(excelFileName)
 	common.Checkerr(err)
@@ -87,7 +71,10 @@ func LoadCodeSz()  {
 				tmp, err = cells[7].String()
 				common.Checkerr(err)
 				mtime, err := time.ParseInLocation("2006-01-02", tmp, time.Local)
-				common.Checkerr(err)
+				if err!=nil {
+					fmt.Println(err)
+					mtime,_=time.ParseInLocation("2006-01-02", "1990-01-01", time.Local)
+				}
 				market_time := int(mtime.Unix())
 				common.Checkerr(err)
 				baseinfo := Baseinfo{0, code, name, "sz", "A", market_time, zong_gu_ben, liutong_gu_ben}
@@ -109,7 +96,10 @@ func LoadCodeSz()  {
 				tmp,err=cells[12].String()
 				common.Checkerr(err)
 				mtime,err:=time.ParseInLocation("2006-01-02",tmp,time.Local)
-				common.Checkerr(err)
+				if err!=nil {
+					fmt.Println(err)
+					mtime,_=time.ParseInLocation("2006-01-02", "1990-01-01", time.Local)
+				}
 				market_time:=int(mtime.Unix())
 				common.Checkerr(err)
 				baseinfo:=Baseinfo{0,code,name,"sz","B",market_time,zong_gu_ben,liutong_gu_ben}
@@ -129,7 +119,7 @@ func moneytofloat(money string) float64 {
 	return result
 
 }
-func DownloadCodeSh()  {
+func loadCodeSh()  {
 	client:=new(http.Client)
 	url:="http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=1"
 
@@ -146,21 +136,30 @@ func DownloadCodeSh()  {
 	b, err := decode(robots)
 	str:=string(b)
 	codes:=strings.Split(str,"\n")
+	baseinfo:=Baseinfo{}
+	baseinfo.Jiaoyisuo="sh"
+	baseinfo.A_or_b="b"
+	var mtime time.Time
 	for i,d := range codes{
 		if(i==0){
 			continue
 		}
 		arr:=strings.Split(d,"	  ")
 		if(len(arr)==8){
-			mtime,err:=time.ParseInLocation("2006-01-02",arr[4],time.Local)
+			baseinfo.Code=arr[2]
+			baseinfo.Name=arr[3]
+			if len(arr[4])==10{
+				mtime,_=time.ParseInLocation("2006-01-02",arr[4],time.Local)
+			}else{
+				mtime,_=time.ParseInLocation("2006-01-02", "1990-01-01", time.Local)
+			}
+			baseinfo.Market_time=int(mtime.Unix())
+			baseinfo.Zong_gu_ben,err =strconv.ParseFloat(arr[5],64)
 			common.Checkerr(err)
-			market_time:=int(mtime.Unix())
-			zong_gu_ben,err:=strconv.ParseFloat(arr[5],64)
+			baseinfo.Liutong_gu_ben,err=strconv.ParseFloat(arr[6],64)
 			common.Checkerr(err)
-			liutong_gu_ben,err:=strconv.ParseFloat(arr[6],64)
-			common.Checkerr(err)
-			baseinfo:=Baseinfo{0,arr[2],arr[3],"sh","A",market_time,zong_gu_ben,liutong_gu_ben}
 			updatedb(baseinfo)
+			fmt.Println(baseinfo)
 		}
 	}
 	url="http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=2"
@@ -175,46 +174,68 @@ func DownloadCodeSh()  {
 	b, err = decode(robots)
 	str=string(b)
 	codes=strings.Split(str,"\n")
+	baseinfo.Jiaoyisuo="sh"
+	baseinfo.A_or_b="b"
 	for i,d := range codes{
 		if(i==0){
 			continue
 		}
 		arr:=strings.Split(d,"	  ")
 		if(len(arr)==8){
-			mtime,err:=time.ParseInLocation("2006-01-02",arr[4],time.Local)
+			baseinfo.Code=arr[2]
+			baseinfo.Name=arr[3]
+			if len(arr[4])==10{
+				mtime,_=time.ParseInLocation("2006-01-02",arr[4],time.Local)
+			}else{
+				mtime,_=time.ParseInLocation("2006-01-02", "1990-01-01", time.Local)
+			}
+			baseinfo.Market_time=int(mtime.Unix())
+			baseinfo.Zong_gu_ben,err =strconv.ParseFloat(arr[5],64)
 			common.Checkerr(err)
-			market_time:=int(mtime.Unix())
-			zong_gu_ben,err:=strconv.ParseFloat(arr[5],64)
+			baseinfo.Liutong_gu_ben,err=strconv.ParseFloat(arr[6],64)
 			common.Checkerr(err)
-			liutong_gu_ben,err:=strconv.ParseFloat(arr[6],64)
-			common.Checkerr(err)
-			baseinfo:=Baseinfo{0,arr[2],arr[3],"sh","B",market_time,zong_gu_ben,liutong_gu_ben}
 			updatedb(baseinfo)
 		}
 	}
 }
 
 func updatedb(baseinfo Baseinfo)  {
-	stmt,err:=db.Prepare("select id from baseinfo where code=?")
-	common.Checkerr(err)
-	rows,err:=stmt.Query(baseinfo.code)
-	common.Checkerr(err)
-	isexist:=false
-
-	for rows.Next(){
-		isexist=true
-	}
-	if isexist{
-		stmt,err:=db.Prepare("update baseinfo set code=?,name=?,jiaoyisuo=?,a_or_b=?,market_time=?,zong_gu_ben=?,liutong_gu_ben=? where id=?")
-		common.Checkerr(err)
-		_,err=stmt.Exec(baseinfo.code,baseinfo.name,baseinfo.jiaoyisuo,baseinfo.a_or_b,baseinfo.market_time,baseinfo.zong_gu_ben,baseinfo.liutong_gu_ben,baseinfo.id)
-		common.Checkerr(err)
-		fmt.Println("update")
+	db:=orm.NewOrm()
+	exist := db.QueryTable("baseinfo").Filter("Code", baseinfo.Code).Exist()
+	if exist{
+		db.QueryTable("baseinfo").Filter("Code", baseinfo.Code).Update(orm.Params{
+			"code": baseinfo.Code,
+			"name":baseinfo.Name,
+			"market_time":baseinfo.Market_time,
+			"zong_gu_ben":baseinfo.Zong_gu_ben,
+			"liutong_gu_ben":baseinfo.Liutong_gu_ben,
+		})
+		fmt.Println("update"+baseinfo.Code)
 	}else{
-		stmt,err:=db.Prepare("insert into baseinfo (code,name,jiaoyisuo,a_or_b,market_time,zong_gu_ben,liutong_gu_ben) values(?,?,?,?,?,?,?)")
-		common.Checkerr(err)
-		_,err=stmt.Exec(baseinfo.code,baseinfo.name,baseinfo.jiaoyisuo,baseinfo.a_or_b,baseinfo.market_time,baseinfo.zong_gu_ben,baseinfo.liutong_gu_ben)
-		common.Checkerr(err)
-		fmt.Println("insert")
+		db.Insert(&baseinfo)
+		fmt.Println("insert"+baseinfo.Code)
 	}
+
+	//stmt,err:=db.Prepare("select id from baseinfo where code=?")
+	//common.Checkerr(err)
+	//rows,err:=stmt.Query(baseinfo.code)
+	//common.Checkerr(err)
+	//isexist:=false
+	//
+	//for rows.Next(){
+	//	isexist=true
+	//}
+	//if isexist{
+	//	stmt,err:=db.Prepare("update baseinfo set code=?,name=?,jiaoyisuo=?,a_or_b=?,market_time=?,zong_gu_ben=?,liutong_gu_ben=? where id=?")
+	//	common.Checkerr(err)
+	//	_,err=stmt.Exec(baseinfo.code,baseinfo.name,baseinfo.jiaoyisuo,baseinfo.a_or_b,baseinfo.market_time,baseinfo.zong_gu_ben,baseinfo.liutong_gu_ben,baseinfo.id)
+	//	common.Checkerr(err)
+	//	fmt.Println("update")
+	//}else{
+	//	stmt,err:=db.Prepare("insert into baseinfo (code,name,jiaoyisuo,a_or_b,market_time,zong_gu_ben,liutong_gu_ben) values(?,?,?,?,?,?,?)")
+	//	common.Checkerr(err)
+	//	_,err=stmt.Exec(baseinfo.code,baseinfo.name,baseinfo.jiaoyisuo,baseinfo.a_or_b,baseinfo.market_time,baseinfo.zong_gu_ben,baseinfo.liutong_gu_ben)
+	//	common.Checkerr(err)
+	//	fmt.Println("insert")
+	//}
 }
