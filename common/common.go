@@ -3,7 +3,7 @@ package common
 import "fmt"
 
 func Checkerr(err error) {
-	if err != nil {
+	if err!=nil {
 		fmt.Println(err)
 	}
 }

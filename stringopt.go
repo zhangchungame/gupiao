@@ -11,16 +11,16 @@ func main() {
 	fmt.Println(" Contains 函数的用法")
 	fmt.Println(strings.Contains("seafood", "foo")) //true
 	fmt.Println(strings.Contains("seafood", "bar")) //false
-	fmt.Println(strings.Contains("seafood", ""))    //true
-	fmt.Println(strings.Contains("", ""))           //true 这里要特别注意
-	fmt.Println(strings.Contains("我是中国人", "我"))     //true
+	fmt.Println(strings.Contains("seafood", "")) //true
+	fmt.Println(strings.Contains("", "")) //true 这里要特别注意
+	fmt.Println(strings.Contains("我是中国人", "我")) //true
 
 	fmt.Println("")
 	fmt.Println(" ContainsAny 函数的用法")
-	fmt.Println(strings.ContainsAny("team", "i"))        // false
+	fmt.Println(strings.ContainsAny("team", "i")) // false
 	fmt.Println(strings.ContainsAny("failure", "u & i")) // true
-	fmt.Println(strings.ContainsAny("foo", ""))          // false
-	fmt.Println(strings.ContainsAny("", ""))             // false
+	fmt.Println(strings.ContainsAny("foo", "")) // false
+	fmt.Println(strings.ContainsAny("", "")) // false
 
 	fmt.Println("")
 	fmt.Println(" ContainsRune 函数的用法")
@@ -29,7 +29,7 @@ func main() {
 	fmt.Println("")
 	fmt.Println(" Count 函数的用法")
 	fmt.Println(strings.Count("cheese", "e")) // 3
-	fmt.Println(strings.Count("five", ""))    // before & after each rune result: 5 , 源码中有实现
+	fmt.Println(strings.Count("five", "")) // before & after each rune result: 5 , 源码中有实现
 
 	fmt.Println("")
 	fmt.Println(" EqualFold 函数的用法")
@@ -62,7 +62,7 @@ func main() {
 	fmt.Println(" Index 函数的用法")
 	fmt.Println(strings.Index("NLT_abc", "abc")) // 返回第一个匹配字符的位置，这里是4
 	fmt.Println(strings.Index("NLT_abc", "aaa")) // 在存在返回 -1
-	fmt.Println(strings.Index("我是中国人", "中"))     // 在存在返回 6
+	fmt.Println(strings.Index("我是中国人", "中")) // 在存在返回 6
 
 	fmt.Println("")
 	fmt.Println(" IndexAny 函数的用法")
@@ -73,7 +73,7 @@ func main() {
 	fmt.Println(" Index 函数的用法")
 	fmt.Println(strings.IndexRune("NLT_abc", 'b')) // 返回第一个匹配字符的位置，这里是4
 	fmt.Println(strings.IndexRune("NLT_abc", 's')) // 在存在返回 -1
-	fmt.Println(strings.IndexRune("我是中国人", '中'))   // 在存在返回 6
+	fmt.Println(strings.IndexRune("我是中国人", '中')) // 在存在返回 6
 
 	fmt.Println("")
 	fmt.Println(" Join 函数的用法")
@@ -87,7 +87,7 @@ func main() {
 	fmt.Println("")
 	fmt.Println(" LastIndexAny 函数的用法")
 	fmt.Println(strings.LastIndexAny("go gopher", "go")) // 4
-	fmt.Println(strings.LastIndexAny("我是中国人", "中"))      // 6
+	fmt.Println(strings.LastIndexAny("我是中国人", "中")) // 6
 
 	fmt.Println("")
 	fmt.Println(" Map 函数的用法")
@@ -124,16 +124,16 @@ func main() {
 
 	fmt.Println("")
 	fmt.Println(" SplitAfterN 函数的用法")
-	fmt.Printf("%qn", strings.SplitAfterN("/home/m_ta/src", "/", 2))  //["/" "home/m_ta/src"]
+	fmt.Printf("%qn", strings.SplitAfterN("/home/m_ta/src", "/", 2)) //["/" "home/m_ta/src"]
 	fmt.Printf("%qn", strings.SplitAfterN("#home#m_ta#src", "#", -1)) //["/" "home/" "m_ta/" "src"]
 
 	fmt.Println("")
 	fmt.Println(" SplitN 函数的用法")
 	fmt.Printf("%qn", strings.SplitN("/home/m_ta/src", "/", 1))
 
-	fmt.Printf("%qn", strings.SplitN("/home/m_ta/src", "/", 2))  //["/" "home/" "m_ta/" "src"]
+	fmt.Printf("%qn", strings.SplitN("/home/m_ta/src", "/", 2)) //["/" "home/" "m_ta/" "src"]
 	fmt.Printf("%qn", strings.SplitN("/home/m_ta/src", "/", -1)) //["" "home" "m_ta" "src"]
-	fmt.Printf("%qn", strings.SplitN("home,m_ta,src", ",", 2))   //["/" "home/" "m_ta/" "src"]
+	fmt.Printf("%qn", strings.SplitN("home,m_ta,src", ",", 2)) //["/" "home/" "m_ta/" "src"]
 
 	fmt.Printf("%qn", strings.SplitN("#home#m_ta#src", "#", -1)) //["/" "home/" "m_ta/" "src"]
 
