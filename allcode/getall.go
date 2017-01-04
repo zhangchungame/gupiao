@@ -28,12 +28,12 @@ type Baseinfo struct {
 func Getallcodes() []Baseinfo{
 	db:=orm.NewOrm()
 	var result []Baseinfo
-	db.QueryTable("baseinfo").All(&result)
+	db.QueryTable("baseinfo").Filter("a_or_b","A").Limit(-1).All(&result)
 	return result
 }
 
 func Setallcodes()  {
-	//loadCodeSz()
+	loadCodeSz()
 	loadCodeSh()
 }
 func decode(s []byte) ([]byte, error) {
