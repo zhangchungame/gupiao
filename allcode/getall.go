@@ -4,9 +4,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	"strconv"
 	"fmt"
-	"bytes"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/encoding/simplifiedchinese"
 	"io/ioutil"
 	"github.com/tealeg/xlsx"
 	"time"
@@ -36,16 +33,7 @@ func Setallcodes()  {
 	loadCodeSz()
 	loadCodeSh()
 }
-func decode(s []byte) ([]byte, error) {
-	I := bytes.NewReader(s)
-	//O := transform.NewReader(I, traditionalchinese.Big5.NewDecoder())
-	O := transform.NewReader(I, simplifiedchinese.GB18030.NewDecoder())
-	d, e := ioutil.ReadAll(O)
-	if e != nil {
-		return nil, e
-	}
-	return d, nil
-}
+
 func loadCodeSz()  {
 	excelFileName := "aaa.xlsx"
 	xlFile, err := xlsx.OpenFile(excelFileName)
@@ -133,7 +121,7 @@ func loadCodeSh()  {
 		return
 	}
 	robots, err := ioutil.ReadAll(resp.Body)
-	b, err := decode(robots)
+	b, err := common.Gb2utf_decode(robots)
 	str:=string(b)
 	codes:=strings.Split(str,"\n")
 	baseinfo:=Baseinfo{}
@@ -171,7 +159,7 @@ func loadCodeSh()  {
 	req.Header["Referer"]=append(req.Header["Referer"],"http://www.sse.com.cn/assortment/stock/list/share/")
 	resp,err= client.Do(req)
 	robots, err = ioutil.ReadAll(resp.Body)
-	b, err = decode(robots)
+	b, err = common.Gb2utf_decode(robots)
 	str=string(b)
 	codes=strings.Split(str,"\n")
 	baseinfo.Jiaoyisuo="sh"

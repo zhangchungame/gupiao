@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"gupiao/allcode"
 	"gupiao/rikxian"
+	"gupiao/rimingxi"
 )
 
 
@@ -15,10 +16,11 @@ func OrmInit()  {
 	orm.RegisterModel(new(allcode.Baseinfo))
 	orm.RegisterModel(new(rikxian.Rikxian))
 	orm.RegisterModel(new(screen.Screen))
+	orm.RegisterModel(new(rimingxi.Rimingxi))
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 }
 func main() {
 	OrmInit()
-	screen.Calculator()
+	rimingxi.RimingxigetAll()
 }
