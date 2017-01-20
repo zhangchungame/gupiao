@@ -25,7 +25,7 @@ type Baseinfo struct {
 func Getallcodes() []Baseinfo{
 	db:=orm.NewOrm()
 	var result []Baseinfo
-	db.QueryTable("baseinfo").Filter("a_or_b","A").Limit(-1).All(&result)
+	db.QueryTable("baseinfo").Filter("a_or_b","A").OrderBy("id").Limit(-1).All(&result)
 	return result
 }
 
@@ -49,7 +49,7 @@ func loadCodeSz()  {
 			name,err:=cells[6].String()
 			common.Checkerr(err)
 
-			if code!=""&&name!="" {
+			if !strings.EqualFold(code,"")&&!strings.EqualFold(name,"") {
 				tmp, err := cells[8].String()
 				common.Checkerr(err)
 				zong_gu_ben := moneytofloat(tmp)
@@ -74,7 +74,7 @@ func loadCodeSz()  {
 			common.Checkerr(err)
 			name,err=cells[11].String()
 			common.Checkerr(err)
-			if code!=""&&name!=""{
+			if !strings.EqualFold(code,"")&&!strings.EqualFold(name,"") {
 				tmp,err:=cells[13].String()
 				common.Checkerr(err)
 				zong_gu_ben:=moneytofloat(tmp)

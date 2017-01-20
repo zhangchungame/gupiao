@@ -16,11 +16,14 @@ func OrmInit()  {
 	orm.RegisterModel(new(allcode.Baseinfo))
 	orm.RegisterModel(new(rikxian.Rikxian))
 	orm.RegisterModel(new(screen.Screen))
-	orm.RegisterModel(new(rimingxi.Rimingxi))
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 }
 func main() {
 	OrmInit()
+	//rimingxi.RimingxigetAll()
+	//allcode.Setallcodes()
+	//rikxian.Getallkxian()
+	//junxian.CalculateAll_30()
 	rimingxi.RimingxigetAll()
 }

@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"gupiao/common"
 	"strings"
-	"strconv"
 	"time"
 	"github.com/astaxie/beego/orm"
 	"gupiao/allcode"
+	"strconv"
 )
 
 type Rimingxi struct {
@@ -34,7 +34,7 @@ func RimingxigetAll()  {
 		go RimingxiTime(val,chprocess)
 		//RimingxiTime(val,chprocess)
 		process_count++
-		if process_count>100{
+		if process_count>5{
 			<-chprocess
 			process_count--
 			total_count++
@@ -48,6 +48,10 @@ func RimingxigetAll()  {
 }
 
 func RimingxiTime(baseinfo allcode.Baseinfo,ch chan int)  {
+	sql:="CREATE TABLE IF NOT EXISTS `rimingxi_"+baseinfo.Code+"` (`id` int(11) NOT NULL AUTO_INCREMENT,`date` varchar(14) NOT NULL DEFAULT '',`date_int` int(11) NOT NULL DEFAULT '0',`chengjiaojia` double(8,4) NOT NULL DEFAULT '0.0000',`zhangdiee` double(8,4) NOT NULL DEFAULT '0.0000',`chengjiaoshou` int(11) NOT NULL DEFAULT '0',`chengjiaoe` double(20,4) NOT NULL DEFAULT '0.0000',`buy_sall` varchar(2) NOT NULL DEFAULT '',PRIMARY KEY (`id`),KEY `date` (`date`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+	db:=orm.NewOrm()
+	_,err:=db.Raw(sql).Exec()
+	common.Checkerr(err)
 	startStr:="2015-01-01"
 	startDate,err:=time.ParseInLocation("2006-01-02",startStr,time.Local)
 	common.Checkerr(err)
@@ -63,8 +67,11 @@ func RimingxiTime(baseinfo allcode.Baseinfo,ch chan int)  {
 
 func rimingxiget(date string,baseinfo allcode.Baseinfo){
 	db:=orm.NewOrm()
-	exist := db.QueryTable("rimingxi").Filter("code", baseinfo.Code).Filter("date",date).Exist()
-	if exist{
+	var isexist Rimingxi
+	sql:="select * from rimingxi_"+baseinfo.Code+" where date='"+date+"'"
+	db.Raw(sql).QueryRow(&isexist)
+	if isexist.Id!=0{
+		fmt.Println(baseinfo.Code+"----"+date+"-----isexist")
 		return
 	}
 	url:="http://market.finance.sina.com.cn/downxls.php?date="+date+"&symbol="+baseinfo.Jiaoyisuo+baseinfo.Code;
@@ -78,7 +85,10 @@ func rimingxiget(date string,baseinfo allcode.Baseinfo){
 	str:=string(b)
 	req.Body.Close()
 	strs:=strings.Split(str,"\n")
-	result:=make([]Rimingxi,0)
+
+	sql="insert into rimingxi_"+baseinfo.Code+" (date,date_int,chengjiaojia,zhangdiee,chengjiaoshou,chengjiaoe,buy_sall) values";
+	sql_arr:=make([]string,0);
+	count:=0;
 	for index,val:=range strs{
 		if index==0{
 			continue
@@ -87,35 +97,34 @@ func rimingxiget(date string,baseinfo allcode.Baseinfo){
 		if len(arr)!=6{
 			continue
 		}
-		tmp_rimingxi:=Rimingxi{}
-		tmp_rimingxi.Code=baseinfo.Code
-		tmp_rimingxi.Date=date
-		//算時間
 		tmptime,err:=time.ParseInLocation("2006-01-02 15:04:05",date+" "+arr[0],time.Local)
 		common.Checkerr(err)
-		tmp_rimingxi.Date_int=tmptime.Unix()
-		tmp_rimingxi.Chengjiaojia,err=strconv.ParseFloat(arr[1],64)
-		common.Checkerr(err)
+		zhangdiee:=arr[2];
 		if strings.EqualFold(arr[2],"--"){
-			tmp_rimingxi.Zhangdiee=0
-		}else{
-			tmp_rimingxi.Zhangdiee,err=strconv.ParseFloat(arr[2],64)
-			common.Checkerr(err)
+			zhangdiee="0"
 		}
-		tmp_rimingxi.Chengjiaoshou,err=strconv.ParseInt(arr[3],10,64)
-		common.Checkerr(err)
-		tmp_rimingxi.Chengjiaoe,err=strconv.ParseFloat(arr[4],64)
-		common.Checkerr(err)
+		buy_sall:="";
 		if strings.EqualFold(arr[5],"买盘"){
-			tmp_rimingxi.Buy_sall="b"
+			buy_sall="b"
 		}else if strings.EqualFold(arr[5],"卖盘"){
-			tmp_rimingxi.Buy_sall="s"
+			buy_sall="s"
 		}else{
-			tmp_rimingxi.Buy_sall="e"
+			buy_sall="e"
 		}
-		result=append(result,tmp_rimingxi)
+		sql_arr=append(sql_arr,"('"+date+"',"+strconv.FormatInt(tmptime.Unix(),10)+","+arr[1]+","+zhangdiee+","+arr[3]+","+arr[4]+",'"+buy_sall+"')")
+		count++
+		if count>=200{
+			_,err:=db.Raw(sql+strings.Join(sql_arr,",")).Exec()
+			common.Checkerr(err)
+			count=0
+			sql_arr=sql_arr[(len(sql_arr)-1):]
+		}
 	}
-	db.InsertMulti(100,&result)
+	if len(sql_arr)>0{
+		_,err:=db.Raw(sql+strings.Join(sql_arr,",")).Exec()
+		common.Checkerr(err)
+	}
+
 	fmt.Println(date+"#####"+baseinfo.Code)
 }
 

@@ -52,7 +52,6 @@ func junxian30(code string,chprocess chan int)  {
 			"rijun30":rikxians[index].Rijun30,
 			"rijun30_cha":rikxians[index].Rijun30_cha,
 		})
-
 	}
 	fmt.Println(code+"finish")
 	chprocess<-1

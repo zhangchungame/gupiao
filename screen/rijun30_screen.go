@@ -78,7 +78,7 @@ func Calculator()  {
 				fmt.Println(val)
 			}
 			count=0
-			screens=screens[len(screens):]
+			screens=screens[(len(screens)-1):]
 		}
 		screens=append(screens,val)
 		count++
