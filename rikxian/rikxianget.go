@@ -29,6 +29,10 @@ type Rikxian struct {
 	Liutongshizhi float64
 	Rijun30 float64
 	Rijun30_cha float64
+	Rijun10 float64
+	Rijun10_cha float64
+	Rijun5 float64
+	Rijun5_cha float64
 }
 
 func Getallkxian()  {

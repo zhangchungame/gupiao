@@ -6,7 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"gupiao/allcode"
 	"gupiao/rikxian"
-	"gupiao/rimingxi"
+	"gupiao/junxian"
 )
 
 
@@ -16,6 +16,7 @@ func OrmInit()  {
 	orm.RegisterModel(new(allcode.Baseinfo))
 	orm.RegisterModel(new(rikxian.Rikxian))
 	orm.RegisterModel(new(screen.Screen))
+	orm.RegisterModel(new(screen.Chengjiaoliang))
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 }
@@ -25,5 +26,12 @@ func main() {
 	//allcode.Setallcodes()
 	//rikxian.Getallkxian()
 	//junxian.CalculateAll_30()
-	rimingxi.RimingxigetAll()
+	//junxian.CalculateAll_10()
+	junxian.Jiaocuo30()
+
+	//rimingxi.RimingxigetAll()
+	//screen.ChengjiaoScreen()
+	//screen.Showfenbu()
 }
+
+

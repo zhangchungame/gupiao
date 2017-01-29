@@ -30,3 +30,35 @@ CREATE TABLE `baseinfo` (
   PRIMARY KEY (`id`),
   KEY `a_or_b` (`a_or_b`,`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+CREATE TABLE `chengjiaoliang` (
+`id`  int(11) NOT NULL AUTO_INCREMENT ,
+`code`  varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`date`  varchar(14) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`chaoda_buy`  int(11) NOT NULL DEFAULT 0 ,
+`chaoda_buy_shou`  int(11) NOT NULL DEFAULT 0 ,
+`chaoda_sall`  int(11) NOT NULL DEFAULT 0 ,
+`chaoda_sall_shou`  int(11) NOT NULL DEFAULT 0 ,
+`da_buy`  int(11) NOT NULL DEFAULT 0 ,
+`da_buy_shou`  int(11) NOT NULL DEFAULT 0 ,
+`da_sall`  int(11) NOT NULL DEFAULT 0 ,
+`da_sall_shou`  int(11) NOT NULL DEFAULT 0 ,
+`zhong_buy`  int(11) NOT NULL DEFAULT 0 ,
+`zhong_buy_shou`  int(11) NOT NULL DEFAULT 0 ,
+`zhong_sall`  int(11) NOT NULL DEFAULT 0 ,
+`zhong_sall_shou`  int(11) NOT NULL DEFAULT 0 ,
+`xiao_buy`  int(11) NOT NULL DEFAULT 0 ,
+`xiao_buy_shou`  int(11) NOT NULL DEFAULT 0 ,
+`xiao_sall`  int(11) NOT NULL DEFAULT 0 ,
+`xiao_sall_shou`  int(11) NOT NULL DEFAULT 0 ,
+`zhangdiefu`  double(8,4) NOT NULL DEFAULT 0.0000 ,
+PRIMARY KEY (`id`),
+INDEX `code` (`code`, `date`) USING BTREE
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+AUTO_INCREMENT=1664
+ROW_FORMAT=DYNAMIC
+;

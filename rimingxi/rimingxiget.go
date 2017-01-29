@@ -34,7 +34,7 @@ func RimingxigetAll()  {
 		go RimingxiTime(val,chprocess)
 		//RimingxiTime(val,chprocess)
 		process_count++
-		if process_count>5{
+		if process_count>20{
 			<-chprocess
 			process_count--
 			total_count++
@@ -48,31 +48,46 @@ func RimingxigetAll()  {
 }
 
 func RimingxiTime(baseinfo allcode.Baseinfo,ch chan int)  {
-	sql:="CREATE TABLE IF NOT EXISTS `rimingxi_"+baseinfo.Code+"` (`id` int(11) NOT NULL AUTO_INCREMENT,`date` varchar(14) NOT NULL DEFAULT '',`date_int` int(11) NOT NULL DEFAULT '0',`chengjiaojia` double(8,4) NOT NULL DEFAULT '0.0000',`zhangdiee` double(8,4) NOT NULL DEFAULT '0.0000',`chengjiaoshou` int(11) NOT NULL DEFAULT '0',`chengjiaoe` double(20,4) NOT NULL DEFAULT '0.0000',`buy_sall` varchar(2) NOT NULL DEFAULT '',PRIMARY KEY (`id`),KEY `date` (`date`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+	sql:="CREATE TABLE IF NOT EXISTS `rimingxi_"+baseinfo.Code+"` (`id` int(11) NOT NULL AUTO_INCREMENT,`date` varchar(14) NOT NULL DEFAULT '',`date_int` int(11) NOT NULL DEFAULT '0',`chengjiaojia` double(8,4) NOT NULL DEFAULT '0.0000',`zhangdiee` double(8,4) NOT NULL DEFAULT '0.0000',`chengjiaoshou` int(11) NOT NULL DEFAULT '0',`chengjiaoe` double(20,4) NOT NULL DEFAULT '0.0000',`buy_sall` varchar(2) NOT NULL DEFAULT '',PRIMARY KEY (`id`),KEY `date` (`date`),KEY `date_int` (`date_int`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 	db:=orm.NewOrm()
 	_,err:=db.Raw(sql).Exec()
 	common.Checkerr(err)
-	startStr:="2015-01-01"
+	sql="select * from rimingxi_"+baseinfo.Code+" order by id desc limit 0,1"
+	tmprimingxi:=Rimingxi{}
+	db.Raw(sql).QueryRow(&tmprimingxi)
+	startStr:="2016-01-01"
+	if tmprimingxi.Date_int>0{
+		startStr=tmprimingxi.Date
+	}
+	fmt.Println("startDate======================="+startStr)
 	startDate,err:=time.ParseInLocation("2006-01-02",startStr,time.Local)
 	common.Checkerr(err)
 	//startInt:=startDate.Unix()
 	nowDate:=time.Now()
 	for startDate.Unix()<=nowDate.Unix(){
-		rimingxiget(startDate.Format("2006-01-02"),baseinfo)
+		if rimingxiget(startDate.Format("2006-01-02"),baseinfo)==0{
+			rimingxiget(startDate.Format("2006-01-02"),baseinfo)
+		}
 		startDate=startDate.AddDate(0,0,1)
 	}
 	fmt.Println(baseinfo.Code+"++++++++++++++++++++++++++++++=finish")
 	ch<-1
 }
 
-func rimingxiget(date string,baseinfo allcode.Baseinfo){
+func rimingxiget(date string,baseinfo allcode.Baseinfo) int64{
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Print("error___________________________")
+			fmt.Println(err)
+		}
+	}()
 	db:=orm.NewOrm()
 	var isexist Rimingxi
 	sql:="select * from rimingxi_"+baseinfo.Code+" where date='"+date+"'"
 	db.Raw(sql).QueryRow(&isexist)
 	if isexist.Id!=0{
 		fmt.Println(baseinfo.Code+"----"+date+"-----isexist")
-		return
+		return 2
 	}
 	url:="http://market.finance.sina.com.cn/downxls.php?date="+date+"&symbol="+baseinfo.Jiaoyisuo+baseinfo.Code;
 	req,err:=http.Get(url);
@@ -126,5 +141,7 @@ func rimingxiget(date string,baseinfo allcode.Baseinfo){
 	}
 
 	fmt.Println(date+"#####"+baseinfo.Code)
+	return 1
 }
+
 

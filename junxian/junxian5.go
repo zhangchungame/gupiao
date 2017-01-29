@@ -10,14 +10,14 @@ import (
 
 
 
-func CalculateAll_30()  {
+func CalculateAll_5()  {
 	codes := allcode.Getallcodes()
 	process_count:=0
 	total_count:=0
 	chprocess:=make(chan int)
 	for _, val := range codes {
 		//junxian30(val.Code)
-		go junxian30(val.Code,chprocess)
+		go junxian5(val.Code,chprocess)
 		process_count++
 		if process_count>100{
 			<-chprocess
@@ -32,41 +32,39 @@ func CalculateAll_30()  {
 	fmt.Println(total_count)
 }
 
-func junxian30(code string,chprocess chan int)  {
+func junxian5(code string,chprocess chan int)  {
 	fmt.Println(code+"start")
 	db:=orm.NewOrm()
 	var rikxians []rikxian.Rikxian
 	_,err:=db.QueryTable("rikxian").Filter("code",code).Filter("zuigao__gt",0).OrderBy("date_int").Limit(-1).All(&rikxians)
 	common.Checkerr(err)
 	for index,_:=range rikxians{
-		if index<29{
+		if index<4{
 			continue
 		}
 		sum:=float64(0.0)
-		for j:=0;j<30;j++{
-			sum+=rikxians[index-29+j].Shoupan
+		for j:=0;j<5;j++{
+			sum+=rikxians[index-4+j].Shoupan
 		}
-		rikxians[index].Rijun30=sum/30
-		rikxians[index].Rijun30_cha=rikxians[index].Shoupan/rikxians[index].Rijun30-1
+		rikxians[index].Rijun5=sum/5
+		rikxians[index].Rijun5_cha=rikxians[index].Shoupan/rikxians[index].Rijun5-1
 		db.QueryTable("rikxian").Filter("id",rikxians[index].Id).Update(orm.Params{
-			"rijun30":rikxians[index].Rijun30,
-			"rijun30_cha":rikxians[index].Rijun30_cha,
+			"rijun5":rikxians[index].Rijun5,
+			"rijun5_cha":rikxians[index].Rijun5_cha,
 		})
 	}
 	fmt.Println(code+"finish")
 	chprocess<-1
 }
 
-
-
-func Jiaocuo30()  {
+func Jiaocuo5()  {
 	codes := allcode.Getallcodes()
 	process_count:=0
 	total_count:=0
 	chprocess:=make(chan int)
 	for _, val := range codes {
 		//junxian30(val.Code)
-		go jiaocuo30(val.Code,chprocess)
+		go jiaocuo5(val.Code,chprocess)
 		process_count++
 		if process_count>100{
 			<-chprocess
@@ -80,7 +78,7 @@ func Jiaocuo30()  {
 	}
 	fmt.Println(total_count)
 }
-func jiaocuo30(code string,ch chan int)  {
+func jiaocuo5(code string,ch chan int)  {
 	total:=0
 	hit:=0
 	db:=orm.NewOrm()
@@ -88,16 +86,16 @@ func jiaocuo30(code string,ch chan int)  {
 	db.QueryTable("rikxian").Filter("code",code).OrderBy("date_int").Limit(-1).All(&rikxians)
 	riklen:=len(rikxians)
 	for index,rikxian:=range rikxians{
-		if index<29{
+		if index<4{
 			continue
 		}
 		if index==riklen-1{
 			continue
 		}
-		if rikxian.Rijun30_cha>0{
+		if rikxian.Rijun5_cha>0{
 			check:=false
-			for i:=1;i<10;i++{
-				if rikxians[index-i].Rijun30_cha>0{
+			for i:=1;i<5;i++{
+				if rikxians[index-i].Rijun5_cha>0{
 					check=true
 				}
 			}
