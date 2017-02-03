@@ -1,36 +1,45 @@
 package main
 
 import (
-	"gupiao/allcode"
-	_ "github.com/go-sql-driver/mysql"
+	"gupiao/screen"
 	"github.com/astaxie/beego/orm"
+	_ "github.com/go-sql-driver/mysql"
+	"gupiao/allcode"
 	"gupiao/rikxian"
 	"gupiao/junxian"
+	"gupiao/rimingxi"
 )
 
-//func OrmInit()  {
-//
-//	orm.RegisterDataBase("default", "mysql", "root:root@tcp(127.0.0.1:3306)/gupiao?charset=utf8")
-//	orm.RegisterModel(new(allcode.Baseinfo))
-//	orm.RegisterModel(new(rikxian.Rikxian))
-//
-//	orm.RegisterDriver("mysql", orm.DRMySQL)
-//}
 
+func OrmInit()  {
+
+	orm.RegisterDataBase("default", "mysql", "root:root@tcp(127.0.0.1:3306)/gupiao?charset=utf8")
+	orm.RegisterModel(new(allcode.Baseinfo))
+	orm.RegisterModel(new(rikxian.Rikxian))
+	orm.RegisterModel(new(screen.Screen))
+	orm.RegisterModel(new(screen.Chengjiaoliang))
+
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+}
 func main() {
 	OrmInit()
-	rikxian.Getallkxian()
-	junxian.CalculateAll_30()
-	//o := orm.NewOrm()
-	//o.Using("default") // 默认使用 default，你可以指定为其他数据库
-	//
-	//user := new(Baseinfo)
-	//user.Code="123123"
-	//user.Name="zc"
-	//id,err:=o.Insert(user)
-	//fmt.Println(id)
+	rimingxi.RimingxigetAll()
+	//allcode.Setallcodes()
+	//rikxian.Getallkxian()
+	//junxian.CalculateAll_30()
+	//junxian.CalculateAll_10()
+	//db:=orm.NewOrm()
+	//rikxian:=make([]rikxian.Rikxian,0)
+	//_,err:=db.QueryTable("rikxian").Filter("code","601766").Filter("date","2016-11-29").OrderBy("date_int").All(&rikxian)
 	//fmt.Println(err)
-	//var infos []*Baseinfo
-	//o.QueryTable("baseinfo").Filter("id__lt", 5).All(&infos)
-	//fmt.Println(infos[2])
+	//fmt.Println(rikxian)
+
+	return
+	junxian.Jiaocuo30()
+
+	//rimingxi.RimingxigetAll()
+	//screen.ChengjiaoScreen()
+	//screen.Showfenbu()
 }
+
+
